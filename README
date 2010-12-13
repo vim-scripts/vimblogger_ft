@@ -1,0 +1,15 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=3367
+
+vimblogger_ft is a simple reStructuredText to Blogger Interface through VIm.
+
+As the name suggest it is a filetype plugin, which helps to create blog articles in rsST format and send them to blog site. It also provides commands for preview in browser and delete articles.
+
+Module for communication was written in Python. So, VIm has to be compiled with +python.
+
+Other requirements:
+  - Python (tested with version 2.6, should also work with other versions prior 3.0)
+  - gdata http://code.google.com/p/gdata-python-client
+  - docutils http://docutils.sourceforge.net
+  - pygments http://pygments.org (optional)
+
+See documentation for detailed description.
