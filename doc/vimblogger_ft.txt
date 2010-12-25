@@ -1,4 +1,4 @@
-*vimblogger_ft.txt*   reStructuredText to Blogger Interface
+*vimblogger_ft.txt*   reStructuredText to Blogger interface
                     Author: Roman Dobosz, gryf73 at gmail com
 
 Simple interface to create blog articles in rsST format. It provides
@@ -15,7 +15,7 @@ Other requirements:
 - Python (tested with version 2.6, should work also in others)
   - gdata http://code.google.com/p/gdata-python-client
   - docutils http://docutils.sourceforge.net
-  - pygments http://pygments.org (optional)
+  - Pygments http://pygments.org (optional)
 - Blogger account
 
 -----------------------------------------------------------------------
@@ -44,8 +44,8 @@ When article is done, |:SendBlogArticle| will send it to the server.
 
 Output provided by |:PreviewBlogArticle| without any
 css stylesheet will look pretty raw, so it is generally good idea to
-grab stylesheets from blog itself, and tweak it a little, and add to
-list in |g:blogger_stylesheets|. They will be automatically linked to 
+grab stylesheets from blog itself, tweak it a little, and add to list
+in |g:blogger_stylesheets|. They will be automatically linked to 
 generated preview file.
 
 Unfortunately, this script has several limitations, like it is
@@ -110,6 +110,12 @@ g:blogger_stylesheets   (default: [])
     one wanted to save stylesheets from his own blog, so that article 
     can be displayed almost in the same way as in blog.
 
+                                              *g:blogger_pygments_class*
+g:blogger_pygments_class (default: "")
+
+    Name of default CSS class for usage with Pygments. When not
+    provided or empty, it'll use defaults from Pygments: "highlight".
+
 ========================================================================
 Commands~
 
@@ -136,33 +142,32 @@ Commands~
 reST document structure~
 
 It is assumed, that following template will be used:
-
------8<-----
-:Id:
-:Title: Title for the blog
-:Date:
-:Modified:
-:Tags: some, tags
-
-Penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nulla
-facilisis massa ut massa. Sed nisi purus, malesuada eu, porta vulputate,
-suscipit auctor, nunc. Vestibulum convallis, augue eu luctus malesuada,
-mi ante mattis odio, ac venenatis neque sem vitae nisi.
-
-.. more
-
-
-heading
--------
-
-**Congue** mi, quis posuere augue nulla a augue. Pellentesque sed est. 
-Mauris cursus urna id lectus. Integer dignissim feugiat eros. Sed tempor 
-volutpat dolor. Vestibulum vel lectus nec mauris semper adipiscing.
-
-Aliquam tincidunt enim sit amet tellus. Sed mauris nulla, semper 
-tincidunt, luctus a, sodales eget, leo. Sed ligula augue, cursus et. 
------>8-----
-
+>
+ :Id:
+ :Title: Title for the blog article
+ :Date:
+ :Modified:
+ :Tags: some, tags
+ 
+ Penatibus et magnis dis parturient montes, nascetur ridiculus mus.  
+ Nulla facilisis massa ut massa. Sed nisi purus, malesuada eu, porta 
+ vulputate, suscipit auctor, nunc. Vestibulum convallis, augue eu luctus 
+ malesuada, mi ante mattis odio, ac venenatis neque sem vitae nisi.
+ 
+ .. more
+ 
+ 
+ heading
+ -------
+ 
+ **Congue** mi, quis posuere augue nulla a augue. Pellentesque sed est.  
+ Mauris cursus urna id lectus. Integer dignissim feugiat eros.  Sed 
+ tempor volutpat dolor. Vestibulum vel lectus nec mauris semper 
+ adipiscing.
+ 
+ Aliquam tincidunt enim sit amet tellus. Sed mauris nulla, semper 
+ tincidunt, luctus a, sodales eget, leo. Sed ligula augue, cursus et.
+<
 reST document (optionally) starts with *docinfo* section (first several 
 lines, that are starting from ":" character) separaded from other 
 content with one empty line.
@@ -203,18 +208,65 @@ Note, that `.. more' will became HTML comment `<!-- more -->' which will
 prevent from displaying entire post on the bloggers front page, but will 
 not have any visible effect during preview in browser.
 
-Additionally, if pygments is installed, there is sourcecode directive,
-simple syntax highlighter using Pygments module. Very simple usage could
-be as follows:
+========================================================================
+Pygments code highlighting~
 
------8<-----
-.. sourcecode:: python
+Additionally, if Pygments is installed, there is ``sourcecode`` 
+directive, simple syntax highlighter using Pygments module. Very simple 
+usage for Python code could be as follows:
+>
+ .. sourcecode:: python
+ 
+     import vim
+     print vim.current.buffer.name
+<
+Note, that `sourcecode' directive requires argument with the name of the 
+lexer to use. If wrong/non existent lexer is provided, it will fall back 
+to `text' lexer. For more information about available lexers, please 
+refer to Pygments documentation.  
 
-    import vim
-    print vim.current.buffer.name
+Directive `sourcecode' supports two options: `:linenos:' and 
+`:cssclass:'.
 
------>8-----
+`:linenos:' takes zero or one argument - if no arguments is provided, 
+line numbers will be visible starting form 1. Provided integer will be 
+the number of the first line.
 
+`:cssclass:' can be use for changing default class name for block of 
+code.  Default class can be changed by appropriate option for plugin 
+(see documentation), and defaults to "highlight".
+
+It is possible to use VIm colorschemes like desert (which is distributed 
+with VIm), Zenburn, Lucius, Wombat, inkpot or any other with Pygments.  
+Assuming, that colorscheme `desert' should be used, there are two steps 
+to achive it.
+
+First, python module containing Pygments `Style' class has to be 
+generated.  There is appropriate conversion tool in Pygments
+distribution - `scripts/vim2pygments.py'. Uage is simple as:
+>
+ python Pygments/scripts/vim2pygments.py \
+ path/to/vim/colors/desert.vim > desert.py
+<
+Which will create new python module ``desert.py`` containing class
+`DessertStyle`'.
+
+To generate CSS stylesheet, it's enough to:
+>
+ python rst2blogger/scripts/style2css.py desert.py \
+ -c VimDesert > desert.css
+<
+VimDesert is the name of the class, which passed as an argument to 
+`:cssclass:' option of directive `sourceocode'. It will be used as a 
+main CSS class for code top `<div>' element. So, above example will 
+looks like this:
+>
+ .. sourcecode:: python
+     :cssclass: VimDesert
+
+     import vim
+     print vim.current.buffer.name
+<
 Note: All headings for generated HTML by |:SendBlogArticle| will be 
 shifted by 3, so the first heading will become <h3>, second <h4> and so 
 on, to fit into blogger template (well, most of them). Remember, that 
@@ -224,6 +276,7 @@ limitation.
 ========================================================================
 Changelog~
 
+0.2 Pygments sourcecode directive improvements
 0.1 First release
 
 vim:tw=72:fo=tcq2:isk=!-~,^*,^|,^":ts=8:ft=help:norl:
